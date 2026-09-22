@@ -1,0 +1,134 @@
+{
+  "info": {
+    "name": "Commission Quote API",
+    "description": "Platform API (/api/quotes, called by the frontend) and the mock vendor API (/vendor/commission-quotes, called only by the backend). See ../openapi.yaml for the full schema.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8081" },
+    { "key": "apiKey", "value": "local-dev-secret-key" }
+  ],
+  "item": [
+    {
+      "name": "Platform API (/api/quotes)",
+      "item": [
+        {
+          "name": "Generate quote - success",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/quotes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 100000,\n  \"loanTermInMonths\": 60,\n  \"riskBand\": \"MEDIUM\"\n}"
+            },
+            "description": "Expect 200 most of the time. The vendor mock randomly fails ~20% of requests, so an occasional 503 here is expected behaviour, not a bug - retry it."
+          }
+        },
+        {
+          "name": "Generate quote - invalid loan amount (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/quotes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": -500,\n  \"loanTermInMonths\": 60,\n  \"riskBand\": \"MEDIUM\"\n}"
+            },
+            "description": "Expect 400 VALIDATION_ERROR."
+          }
+        },
+        {
+          "name": "Generate quote - loan term out of range (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/quotes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 100000,\n  \"loanTermInMonths\": 600,\n  \"riskBand\": \"MEDIUM\"\n}"
+            },
+            "description": "loanTermInMonths must be 1-480. Expect 400 VALIDATION_ERROR."
+          }
+        },
+        {
+          "name": "Generate quote - missing risk band (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/quotes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 100000,\n  \"loanTermInMonths\": 60\n}"
+            },
+            "description": "Expect 400 VALIDATION_ERROR."
+          }
+        },
+        {
+          "name": "Generate quote - malformed JSON (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/quotes",
+            "body": {
+              "mode": "raw",
+              "raw": "{not-valid-json"
+            },
+            "description": "Expect 400 INVALID_REQUEST."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vendor mock API (/vendor/commission-quotes)",
+      "description": "Not called by the frontend - server-to-server only. Included so the vendor contract is fully documented for anyone extending the client.",
+      "item": [
+        {
+          "name": "Calculate quote - success",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "api-key", "value": "{{apiKey}}" }
+            ],
+            "url": "{{baseUrl}}/vendor/commission-quotes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 100000,\n  \"loanTermInMonths\": 60,\n  \"riskBand\": \"HIGH\"\n}"
+            },
+            "description": "Expect 200 most of the time; ~20% chance of a simulated 503 outage."
+          }
+        },
+        {
+          "name": "Calculate quote - missing api-key (401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/vendor/commission-quotes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 100000,\n  \"loanTermInMonths\": 60,\n  \"riskBand\": \"HIGH\"\n}"
+            },
+            "description": "No api-key header sent. Expect 401 UNAUTHORIZED."
+          }
+        },
+        {
+          "name": "Calculate quote - incorrect api-key (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "api-key", "value": "wrong-key" }
+            ],
+            "url": "{{baseUrl}}/vendor/commission-quotes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanAmount\": 100000,\n  \"loanTermInMonths\": 60,\n  \"riskBand\": \"HIGH\"\n}"
+            },
+            "description": "Expect 401 UNAUTHORIZED."
+          }
+        }
+      ]
+    }
+  ]
+}

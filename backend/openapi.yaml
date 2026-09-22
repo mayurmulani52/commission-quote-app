@@ -1,0 +1,158 @@
+openapi: 3.0.1
+info:
+  title: Commission Quote API
+  description: "Platform API consumed by the frontend, plus the mock vendor endpoint\
+    \ it calls internally. See /api/quotes for the frontend-facing contract and /vendor/commission-quotes\
+    \ for the vendor contract (server-to-server only, requires api-key)."
+  version: v1
+servers:
+- url: http://localhost:8081
+  description: Local development
+tags:
+- name: Quotes
+  description: Frontend-facing endpoint for generating a commission quote
+- name: Vendor (mock)
+  description: Stand-in for the external vendor - server-to-server only
+paths:
+  /vendor/commission-quotes:
+    post:
+      tags:
+      - Vendor (mock)
+      summary: Calculate a commission quote (mock vendor)
+      description: Requires a valid api-key header. Randomly fails ~20% of requests
+        to simulate real vendor network conditions.
+      operationId: calculateQuote
+      parameters:
+      - name: api-key
+        in: header
+        description: Vendor API key
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuoteRequest"
+        required: true
+      responses:
+        "503":
+          description: Simulated vendor outage
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "200":
+          description: Quote calculated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/QuoteResponse"
+        "401":
+          description: Missing or incorrect api-key header
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - api-key: []
+  /api/quotes:
+    post:
+      tags:
+      - Quotes
+      summary: Generate a commission quote
+      description: "Validates the loan details, calls the Commission Quote vendor,\
+        \ and returns the resulting quote. No api-key required from callers of this\
+        \ endpoint - that credential is attached server-side only when this backend\
+        \ calls the vendor."
+      operationId: generateQuote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuoteRequest"
+        required: true
+      responses:
+        "400":
+          description: Invalid or malformed request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: "Vendor timed out, errored, or is simulating an outage"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "200":
+          description: Quote generated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/QuoteResponse"
+components:
+  schemas:
+    QuoteRequest:
+      required:
+      - loanAmount
+      - loanTermInMonths
+      - riskBand
+      type: object
+      properties:
+        loanAmount:
+          type: number
+          description: Requested loan principal
+          example: 100000
+        loanTermInMonths:
+          maximum: 480
+          minimum: 1
+          type: integer
+          description: Loan term in months (1-480)
+          format: int32
+          example: 60
+        riskBand:
+          type: string
+          description: Applicant's risk band
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: One or more fields are invalid
+        details:
+          type: array
+          example:
+          - "loanAmount: must be greater than zero"
+          items:
+            type: string
+            example: "[\"loanAmount: must be greater than zero\"]"
+    QuoteResponse:
+      type: object
+      properties:
+        quoteId:
+          type: string
+          description: Vendor-generated quote identifier
+          example: Q-7AB2DCA0
+        commissionRate:
+          type: number
+          description: Commission rate as a decimal fraction
+          example: 0.02
+        totalCommission:
+          type: number
+          description: "loanAmount * commissionRate, rounded to 2dp"
+          example: 2000.0
+  securitySchemes:
+    api-key:
+      type: apiKey
+      description: Required only by /vendor/commission-quotes. Never sent by the frontend
+        - the platform API holds this secret and attaches it server-side.
+      name: api-key
+      in: header
