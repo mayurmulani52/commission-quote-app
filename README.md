@@ -107,9 +107,6 @@ sequenceDiagram
 
 ## Assumptions
 
-A few details weren't pinned down by the original requirements, so I made
-explicit, documented choices:
-
 - **`riskBand` values**: not otherwise specified, so I used `LOW` /
   `MEDIUM` / `HIGH` (see `RiskBand.java` / `types/quote.ts`). A real
   integration would use whatever enum the actual vendor contract defines.
