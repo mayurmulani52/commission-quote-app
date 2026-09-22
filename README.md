@@ -1,22 +1,22 @@
 # Commission Quote App
 
-A small full-stack app for the Bendigo Bank Staff Software Engineer take-home
-challenge. A staff member enters loan details, the backend calls a mock
-Commission Quote vendor API, and the UI displays the resulting quote.
+A small full-stack app for a lending platform: a staff member enters loan
+details, the backend calls a mock Commission Quote vendor API, and the UI
+displays the resulting quote.
 
 ## Business overview
 
-**Context.** Bendigo Bank's Lending Platform lets staff generate a
-"Commission Quote" for a loan application — the fee the bank pays/receives
-via a broker or partner arrangement, calculated by an external Vendor system
-based on the loan's size, term, and risk profile. That vendor system is
-still under construction, so this app is built against a **mock** of it,
-using an already-finalised API contract, so the rest of the platform's
-development isn't blocked waiting on the real vendor.
+**Context.** A bank's Lending Platform lets staff generate a "Commission
+Quote" for a loan application — the fee the bank pays/receives via a broker
+or partner arrangement, calculated by an external Vendor system based on the
+loan's size, term, and risk profile. That vendor system is still under
+construction, so this app is built against a **mock** of it, using an
+already-finalised API contract, so the rest of the platform's development
+isn't blocked waiting on the real vendor.
 
-**Who uses it.** Bendigo Bank lending staff, while processing a loan
-application, to quickly see what commission a given set of loan terms would
-generate before finalising the deal.
+**Who uses it.** Lending staff, while processing a loan application, to
+quickly see what commission a given set of loan terms would generate before
+finalising the deal.
 
 **The workflow.**
 1. Staff member enters the loan amount, term (in months), and risk band for
@@ -25,8 +25,8 @@ generate before finalising the deal.
 3. The system sends those details to the Commission Quote vendor and shows
    the resulting quote ID, commission rate, and total commission — or a
    clear error if the request was invalid or the vendor is temporarily
-   unavailable (which the brief asks us to simulate, since real vendor
-   systems do fail intermittently).
+   unavailable (simulated deliberately, since real vendor systems do fail
+   intermittently).
 
 ## Tech stack
 
@@ -107,17 +107,17 @@ sequenceDiagram
 
 ## Assumptions
 
-The challenge brief doesn't pin down a few details, so I made explicit,
-documented choices:
+A few details weren't pinned down by the original requirements, so I made
+explicit, documented choices:
 
-- **`riskBand` values**: not specified in the brief, so I used `LOW` /
+- **`riskBand` values**: not otherwise specified, so I used `LOW` /
   `MEDIUM` / `HIGH` (see `RiskBand.java` / `types/quote.ts`). A real
   integration would use whatever enum the actual vendor contract defines.
 - **Commission rates**: 1.0% / 2.0% / 3.5% for LOW/MEDIUM/HIGH respectively —
-  made up for this exercise, not real Bendigo Bank figures.
-- **`api-key` header name**: the brief says the vendor "must require an
-  `api-key` header", so that's the literal header name used (not
-  `X-API-Key` or similar).
+  made up for this exercise, not real figures.
+- **`api-key` header name**: the requirement was that the vendor "must
+  require an `api-key` header", so that's the literal header name used
+  (not `X-API-Key` or similar).
 - **Backend port 8081, not 8080**: on this machine port 8080 was already
   partially occupied by an unrelated local Jenkins instance, which caused
   intermittent, hard-to-diagnose failures when the backend called itself.
@@ -226,12 +226,12 @@ frontend has one thing to render:
   first error immediately.
 - Persist generated quotes (currently stateless/in-memory only).
 - Basic auth/session handling for the staff-facing `/api/quotes` endpoint
-  itself (out of scope here — the brief's security requirement is on the
+  itself (out of scope here — the stated security requirement is on the
   vendor call).
 
 ## AI usage disclosure
 
-In the interest of transparency, this challenge was built with **Claude**
+In the interest of transparency, this project was built with **Claude**
 (Anthropic) as a pair-programming assistant, used heavily throughout. A
 concrete breakdown:
 
@@ -239,8 +239,8 @@ concrete breakdown:
   Spring Boot/Gradle backend and the Vite/React/TypeScript frontend.
 - **Implementation**: wrote the first draft of the controllers, the
   vendor HTTP client, DTOs/validation, the global exception handler, and
-  the React form/result/error components and API client, from the
-  requirements in the brief.
+  the React form/result/error components and API client, from the stated
+  requirements.
 - **Tests**: generated the JUnit/Mockito/`MockRestServiceServer` backend
   suite (unit, `@WebMvcTest` controller slice, and full-stack
   `@SpringBootTest` integration/security tests) and the
@@ -263,4 +263,4 @@ I'd do differently for production" above are my own judgment calls, not
 just accepted AI output — I can walk through why the vendor mock is a real
 HTTP endpoint rather than a method call, why errors are normalised into one
 `{code, message}` shape, why the api-key never reaches the frontend, and
-the trade-offs of each, in the live-coding session.
+the trade-offs of each.
