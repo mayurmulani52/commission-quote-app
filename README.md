@@ -254,13 +254,3 @@ concrete breakdown:
   the diagnostic and moved the app to port 8081.
 - **Architecture documentation**: drafted this README's diagrams and
   structure, which I then reviewed and edited.
-
-**Ownership.** I reviewed every file, ran the full backend and frontend
-test suites, and drove a live end-to-end browser smoke test (success path,
-client-side validation, and the simulated vendor-outage path) myself before
-treating anything as done. The design choices under "Assumptions" and "What
-I'd do differently for production" above are my own judgment calls, not
-just accepted AI output — I can walk through why the vendor mock is a real
-HTTP endpoint rather than a method call, why errors are normalised into one
-`{code, message}` shape, why the api-key never reaches the frontend, and
-the trade-offs of each.
