@@ -19,11 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Validation and error-mapping coverage for the platform-facing controller.
- * The vendor call itself is mocked out here - see {@link com.bendigobank.commissionquote.integration}
- * for tests that exercise the real end-to-end HTTP call chain.
- */
+// QuoteService is mocked here - see the integration package for tests that hit the real vendor call chain.
 @WebMvcTest(QuoteController.class)
 class QuoteControllerTest {
 

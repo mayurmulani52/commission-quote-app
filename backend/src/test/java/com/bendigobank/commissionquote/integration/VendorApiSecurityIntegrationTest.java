@@ -21,12 +21,7 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * Verifies the mock vendor API's security requirement over real HTTP:
- * "must require an api-key header ... any request without a valid API key
- * should be rejected". Failure-rate is pinned to 0 so only the api-key
- * check is under test here.
- */
+// Same api-key check as VendorQuoteControllerTest, but over real HTTP. failure-rate=0 isolates it from the random-outage behaviour.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestPropertySource(properties = {
         "server.port=18083",

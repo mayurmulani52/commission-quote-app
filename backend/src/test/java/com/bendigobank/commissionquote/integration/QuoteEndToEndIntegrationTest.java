@@ -21,13 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Full-stack integration test: a real HTTP request hits {@code /api/quotes},
- * which in turn makes a real HTTP call (over loopback) to the mock vendor at
- * {@code /vendor/commission-quotes}. Failure rate is pinned to 0 so the
- * happy path is deterministic; see {@link QuoteVendorOutageIntegrationTest}
- * for the failure path.
- */
+// Real HTTP round trip: /api/quotes -> loopback -> /vendor/commission-quotes.
+// failure-rate=0 keeps the happy path deterministic; see QuoteVendorOutageIntegrationTest for the failure case.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestPropertySource(properties = {
         "server.port=18081",

@@ -10,12 +10,8 @@ import java.math.RoundingMode;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Deterministic mock business rules for the vendor. These commission rates
- * are made up purely for this exercise, not real Bendigo Bank figures.
- * Deliberately deterministic (not randomised) so that, unlike vendor
- * availability, the commission calculation itself stays easy to test.
- */
+// Made-up rates for this exercise. Deliberately deterministic (unlike
+// vendor availability) so the calculation itself stays easy to test.
 @Component
 public class CommissionCalculator {
 

@@ -16,12 +16,8 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-/**
- * Failure-rate is pinned to 1 (always fail) so the vendor-outage path is
- * exercised deterministically end-to-end, proving the platform API
- * gracefully translates a vendor failure into a client-friendly 503
- * rather than leaking a stack trace or hanging.
- */
+// failure-rate=1 forces the vendor to always fail, so this checks end-to-end
+// that we return a clean 503 instead of a stack trace or a hang.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestPropertySource(properties = {
         "server.port=18082",

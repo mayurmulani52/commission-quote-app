@@ -3,12 +3,7 @@ package com.bendigobank.commissionquote.client;
 import com.bendigobank.commissionquote.dto.QuoteRequest;
 import com.bendigobank.commissionquote.dto.QuoteResponse;
 
-/**
- * Boundary between our business logic and the external vendor.
- * {@link QuoteService} depends only on this interface, so when the real
- * vendor API becomes available, only {@link HttpVendorQuoteClient} (or a
- * new implementation pointed at the real vendor) needs to change.
- */
+// Lets QuoteService depend on an interface rather than the HTTP client directly.
 public interface VendorQuoteClient {
     QuoteResponse requestQuote(QuoteRequest request);
 }

@@ -5,11 +5,6 @@ import com.bendigobank.commissionquote.dto.QuoteRequest;
 import com.bendigobank.commissionquote.dto.QuoteResponse;
 import org.springframework.stereotype.Service;
 
-/**
- * Business orchestration layer. Kept intentionally thin for this exercise,
- * but exists as a seam for future logic (auditing, caching, retries,
- * multiple vendor lookups, etc.) without the controller needing to change.
- */
 @Service
 public class QuoteService {
 

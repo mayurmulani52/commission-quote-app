@@ -1,6 +1,5 @@
-// NOTE: the challenge brief doesn't define the allowed riskBand values -
-// LOW/MEDIUM/HIGH was chosen as a self-explanatory default (see backend
-// RiskBand.java for the same assumption documented on the other side).
+// riskBand values aren't pinned down by a real vendor contract yet -
+// LOW/MEDIUM/HIGH mirrors the assumption made in backend RiskBand.java.
 export type RiskBand = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export interface QuoteRequest {
