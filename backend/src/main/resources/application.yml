@@ -1,6 +1,6 @@
 server:
-  # 8080 is intentionally avoided here - it commonly clashes with other local
-  # dev tooling (Jenkins, Tomcat, etc.) already bound to that port.
+  # 8080 is intentionally avoided here since it's a common default for other
+  # local dev tooling and can clash.
   port: 8081
 
 spring:
