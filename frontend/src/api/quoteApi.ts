@@ -1,12 +1,8 @@
 import type { ApiErrorPayload, QuoteRequest, QuoteResponse } from '../types/quote';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8081';
 
-/**
- * Thrown for both transport failures (network down, vendor timeout
- * surfaced by the backend as 503) and validation failures (400), so the
- * UI has one consistent shape to render regardless of cause.
- */
+// Covers both transport failures and 4xx/5xx responses so the UI has one shape to render.
 export class QuoteApiError extends Error {
   readonly code: string;
   readonly details: string[];
