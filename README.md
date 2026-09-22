@@ -6,7 +6,7 @@ displays the resulting quote.
 
 ## Business overview
 
-**Context.** A bank's Lending Platform lets staff generate a "Commission
+A bank's Lending Platform lets staff generate a "Commission
 Quote" for a loan application — the fee the bank pays/receives via a broker
 or partner arrangement, calculated by an external Vendor system based on the
 loan's size, term, and risk profile. That vendor system is still under
@@ -32,7 +32,7 @@ finalising the deal.
 
 | Layer | Technology |
 |---|---|
-| Backend | Java 20 (compiles for Java 17+), Spring Boot 3.3.4 (Spring Web, Spring Validation), Gradle 8.2.1 (wrapper committed — no local install needed) |
+| Backend | Java 20 (compiles for Java 17+), Spring Boot 3.3.4 (Spring Web, Spring Validation), springdoc-openapi 2.6 (Swagger UI + OpenAPI generation), Gradle 8.2.1 (wrapper committed — no local install needed) |
 | Backend tests | JUnit 5, Mockito, Spring `MockRestServiceServer`, Spring Boot Test (`@WebMvcTest` / `@SpringBootTest` + `TestRestTemplate`) |
 | Frontend | React 18, TypeScript 5, Vite 5 |
 | Frontend tests | Vitest 2, React Testing Library, `@testing-library/user-event` |
@@ -187,6 +187,20 @@ frontend has one thing to render:
 **`POST /vendor/commission-quotes`** (mock vendor, called only by the backend)
 — same request/response contract, plus a required `api-key` header.
 
+The contract above is also documented formally, three ways, so anyone with
+repo access can see it without reading the controller code:
+
+- **Interactive** — with the backend running, open
+  `http://localhost:8081/swagger-ui.html`.
+- **Static OpenAPI file** — [`backend/openapi.yaml`](backend/openapi.yaml),
+  generated from the same annotations as the live Swagger UI (regenerate
+  after an API change with `curl http://localhost:8081/v3/api-docs.yaml -o
+  backend/openapi.yaml` while the backend is running).
+- **Postman** — [`backend/postman/`](backend/postman) has a collection
+  covering both endpoints (success and every error case below) plus a
+  matching local environment. Import both into Postman to try it without
+  writing any requests by hand.
+
 ## Testing approach
 
 - **Unit**: `CommissionCalculator`, `RandomFailureSimulator`, `QuoteService`,
@@ -218,16 +232,44 @@ frontend has one thing to render:
 - Missing/incorrect `api-key` on the vendor endpoint is rejected (401)
   independently of anything the frontend does.
 
+## Security considerations
+
+- **Constant-time api-key comparison.** The vendor endpoint checks the
+  `api-key` header with `MessageDigest.isEqual` on the UTF-8 bytes, not
+  `String.equals`. `String.equals` short-circuits on the first mismatched
+  character, so with enough samples a network-level timing attack can
+  extract the key one character at a time; `MessageDigest.isEqual` always
+  compares the full length.
+- **The vendor api-key never reaches the frontend.** It's read server-side
+  from `VendorProperties` and attached only inside `HttpVendorQuoteClient`;
+  the browser has no way to see or exfiltrate it.
+- **No internal detail leaks to the client.** `GlobalExceptionHandler`
+  translates every failure (validation, auth, vendor outage, unexpected
+  exceptions) into the same `{code, message}` shape — no stack traces, no
+  vendor error bodies, no exception class names in the response.
+- **CORS is scoped narrowly.** Only `/api/**` allows cross-origin requests,
+  and only from `http://localhost:5173`. `/vendor/**` allows none - it's
+  reachable only from the backend itself.
+- **Input is validated at the boundary**, both client-side (fast feedback,
+  no wasted round trip) and server-side via Bean Validation (the actual
+  enforcement point — the client-side check is a convenience, not a trust
+  boundary).
+- **Out of scope for this exercise, flagged rather than silently skipped:**
+  no authentication/authorization on `/api/quotes` itself (anyone who can
+  reach the backend can request a quote — a real deployment would need
+  staff auth here), no rate limiting, and the vendor api-key's default
+  value lives in `application.yml` rather than a secrets manager (see
+  below).
+
 ## What I'd do differently for production
 
 - Vendor credentials from a secrets manager, not an env-var default in
   `application.yml`.
+- Authentication/authorization on `/api/quotes` (see "Security
+  considerations" above) and rate limiting on both endpoints.
 - Retry with backoff for transient vendor failures instead of surfacing the
   first error immediately.
 - Persist generated quotes (currently stateless/in-memory only).
-- Basic auth/session handling for the staff-facing `/api/quotes` endpoint
-  itself (out of scope here — the stated security requirement is on the
-  vendor call).
 
 ## AI usage disclosure
 
@@ -254,3 +296,14 @@ concrete breakdown:
   the diagnostic and moved the app to port 8081.
 - **Architecture documentation**: drafted this README's diagrams and
   structure, which I then reviewed and edited.
+- **API contract tooling**: added the springdoc-openapi dependency and
+  annotations, generated `backend/openapi.yaml` from the running app, and
+  wrote the Postman collection/environment under `backend/postman/`.
+- **Security pass**: flagged the api-key comparison as timing-unsafe and
+  fixed it to use `MessageDigest.isEqual`; wrote the "Security
+  considerations" section above.
+
+I reviewed every file, ran the full backend and frontend test suites, and
+verified the app manually (success, validation, and vendor-outage paths)
+before treating anything as done — the code here is something I understand
+and stand behind, not just accepted output.
