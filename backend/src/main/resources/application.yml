@@ -1,0 +1,24 @@
+server:
+  # 8080 is intentionally avoided here - it commonly clashes with other local
+  # dev tooling (Jenkins, Tomcat, etc.) already bound to that port.
+  port: 8081
+
+spring:
+  application:
+    name: commission-quote-service
+
+# Configuration for the (mocked) external Commission Quote vendor.
+# In production these would come from a secrets manager / environment,
+# never committed to source control - the defaults below are for local dev only.
+vendor:
+  base-url: ${VENDOR_BASE_URL:http://localhost:8081}
+  api-key: ${VENDOR_API_KEY:local-dev-secret-key}
+  # Probability (0.0-1.0) that the mock vendor randomly fails a request,
+  # simulating real-world network/vendor instability.
+  failure-rate: ${VENDOR_FAILURE_RATE:0.2}
+  connect-timeout-ms: ${VENDOR_CONNECT_TIMEOUT_MS:2000}
+  read-timeout-ms: ${VENDOR_READ_TIMEOUT_MS:3000}
+
+logging:
+  level:
+    com.bendigobank.commissionquote: INFO
