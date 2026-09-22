@@ -115,10 +115,9 @@ sequenceDiagram
 - **`api-key` header name**: the requirement was that the vendor "must
   require an `api-key` header", so that's the literal header name used
   (not `X-API-Key` or similar).
-- **Backend port 8081, not 8080**: on this machine port 8080 was already
-  partially occupied by an unrelated local Jenkins instance, which caused
-  intermittent, hard-to-diagnose failures when the backend called itself.
-  8081 avoids that class of conflict; see `application.yml`.
+- **Backend port 8081, not 8080**: 8080 is a common default for other local
+  dev tooling, so 8081 was chosen to avoid port clashes; see
+  `application.yml`.
 
 ## Prerequisites
 
@@ -284,13 +283,13 @@ concrete breakdown:
   suite (unit, `@WebMvcTest` controller slice, and full-stack
   `@SpringBootTest` integration/security tests) and the
   Vitest/React Testing Library frontend suite.
-- **Debugging**: diagnosed a real, non-obvious environment issue found
-  while smoke-testing — the backend, calling itself over loopback on port
-  8080, was intermittently hitting an unrelated local Jenkins instance
-  also bound to that port (visible as unexplained 403 responses carrying a
-  Jenkins-specific error body). Claude added temporary diagnostic logging
-  to capture the actual response, identified the conflict, then removed
-  the diagnostic and moved the app to port 8081.
+- **Debugging**: diagnosed a real, non-obvious issue found while
+  smoke-testing — the backend, calling itself over loopback on port 8080,
+  was intermittently hitting another process also bound to that port
+  (visible as unexplained 403 responses from an unrelated service). Claude
+  added temporary diagnostic logging to capture the actual response,
+  identified the conflict, then removed the diagnostic and moved the app
+  to port 8081.
 - **Architecture documentation**: drafted this README's diagrams and
   structure, which I then reviewed and edited.
 - **API contract tooling**: added the springdoc-openapi dependency and
