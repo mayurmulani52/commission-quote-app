@@ -16,12 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Security-focused unit tests for the mock vendor endpoint's api-key
- * enforcement, exercised as plain object calls (no Spring context needed).
- * See {@link com.bendigobank.commissionquote.integration.VendorApiSecurityIntegrationTest}
- * for the equivalent coverage over real HTTP.
- */
+// Plain object test for the api-key check - no Spring context needed.
+// VendorApiSecurityIntegrationTest covers the same thing over real HTTP.
 class VendorQuoteControllerTest {
 
     private static final String VALID_KEY = "unit-test-key";
@@ -39,25 +35,25 @@ class VendorQuoteControllerTest {
 
     @Test
     void rejectsRequestMissingApiKeyHeader() {
-        assertThrows(InvalidApiKeyException.class, () -> controller.generateQuote(null, validRequest()));
+        assertThrows(InvalidApiKeyException.class, () -> controller.calculateQuote(null, validRequest()));
     }
 
     @Test
     void rejectsRequestWithBlankApiKeyHeader() {
-        assertThrows(InvalidApiKeyException.class, () -> controller.generateQuote("", validRequest()));
+        assertThrows(InvalidApiKeyException.class, () -> controller.calculateQuote("", validRequest()));
     }
 
     @Test
     void rejectsRequestWithIncorrectApiKey() {
         assertThrows(InvalidApiKeyException.class,
-                () -> controller.generateQuote("not-the-right-key", validRequest()));
+                () -> controller.calculateQuote("not-the-right-key", validRequest()));
     }
 
     @Test
     void acceptsRequestWithCorrectApiKeyAndReturnsQuote() {
         when(failureSimulator.shouldFail()).thenReturn(false);
 
-        QuoteResponse response = controller.generateQuote(VALID_KEY, validRequest());
+        QuoteResponse response = controller.calculateQuote(VALID_KEY, validRequest());
 
         assertEquals(0, new BigDecimal("0.0200").compareTo(response.commissionRate()));
     }
@@ -67,7 +63,7 @@ class VendorQuoteControllerTest {
         when(failureSimulator.shouldFail()).thenReturn(true);
 
         assertThrows(VendorUnavailableException.class,
-                () -> controller.generateQuote(VALID_KEY, validRequest()));
+                () -> controller.calculateQuote(VALID_KEY, validRequest()));
     }
 
     private QuoteRequest validRequest() {
